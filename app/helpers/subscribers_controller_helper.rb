@@ -1,0 +1,2 @@
+module SubscribersControllerHelper
+end
