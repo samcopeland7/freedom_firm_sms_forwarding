@@ -22,4 +22,6 @@ test:
 
 production:
   <<: *default
-  database: db/production.sqlite3
+  database: ff_twilio_production
+  username: ff_twilio
+  password: <%= ENV.fetch("FF_TWILIO_PRODUCTION_PW") %>
