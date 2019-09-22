@@ -15,32 +15,25 @@ class Twilio::MessagesController < ApplicationController
         )
       end
     else
-      unless (@subscriber = Subscriber.find_by(phone_number: params[:From]))
+      if (@subscriber = Subscriber.find_by(phone_number: params[:From]))
+        @subscriber.destroy! if params[:Body].match?(/stop/i)
+      else
         @subscriber = Subscriber.create!(subscriber_params)
         @new_subscriber = true
-      end
 
-      if params[:Body].match?(/stop/i)
-        response_body = 'You have unsubscribed from Freedom Firm updates. You will no longer ' \
-          'receive future prayer updates.'
-        @subscriber.destroy!
-      elsif @new_subscriber
-        response_body = 'You will now receive prayer updates for Freedom Firm. Reply STOP ' \
-          'to no longer receive messages.' 
-      else
-        response_body = 'You are already subscribed to updates from Freedom Firm. Reply STOP '\
-          'to no longer receive messages.'
-      end
+        response_body = 'You will now receive prayer updates for Freedom Firm. Reply HELP ' \
+          'for help. Reply STOP to unsubscribe.' 
 
-      message = Twilio::TwiML::MessagingResponse.new do |r|
-        r.message(
-          body: response_body,
-          from: ENV.fetch('TWILIO_PHONE_NUMBER'),
-          to: @subscriber.phone_number
-        )
+        message = Twilio::TwiML::MessagingResponse.new do |r|
+          r.message(
+            body: response_body,
+            from: ENV.fetch('TWILIO_PHONE_NUMBER'),
+            to: @subscriber.phone_number
+          )
+        end
+  
+        render_twiml message
       end
-
-      render_twiml message
     end
   end
 
